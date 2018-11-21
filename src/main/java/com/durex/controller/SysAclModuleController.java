@@ -4,6 +4,7 @@ import com.durex.common.JsonData;
 import com.durex.param.AclModuleParam;
 import com.durex.param.DeptParam;
 import com.durex.service.SysAclModuleService;
+import com.durex.service.SysTreeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +18,12 @@ public class SysAclModuleController {
 
     @Autowired
     private SysAclModuleService sysAclModuleService;
+    @Autowired
+    private SysTreeService sysTreeService;
 
     @RequestMapping("/aclModule.page")
     public ModelAndView page() {
-        return new ModelAndView("aclModule");
+        return new ModelAndView("acl");
     }
 
     @RequestMapping(value = "/save.json")
@@ -35,6 +38,13 @@ public class SysAclModuleController {
     public JsonData updateAclModule(AclModuleParam aclModuleParam) {
         sysAclModuleService.update(aclModuleParam);
         return JsonData.success();
+    }
+
+
+    @RequestMapping(value = "/tree.json")
+    @ResponseBody
+    public JsonData tree() {
+        return JsonData.success(sysTreeService.aclModuleTree());
     }
 
 }

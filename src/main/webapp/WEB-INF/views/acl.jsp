@@ -223,13 +223,66 @@
        var aclModuleMap = {}; //存储map权限模块信息
        var optionStr = "";
        var lastClickAclModuleId = -1;
-       var aclModuleListTemplate = $("aclModuleListTemplate").html();
+       var aclModuleListTemplate = $("#aclModuleListTemplate").html();
        Mustache.parse(aclModuleListTemplate);
        
        loadAclModuleTree();
        
        function loadAclModuleTree() {
-           
+           $.ajax({
+               url : "/sys/aclModule/tree.json",
+               success : function (result) {
+                   if (result.result) {
+                       aclModuleList = result.data;
+                       var rendered = Mustache.render(aclModuleListTemplate, {
+                           aclModuleList : result.data,
+                           "showDownAngle" : function () {
+                               return function (text, render) {
+                                   return (this.aclModuleList && this.aclModuleList.length > 0) ? "" : "hidden";
+                               }
+                           },
+                           "displayClass" : function () {
+                               return "";
+                           }
+                       });
+                       $("#aclModuleList").html(rendered);
+                       recursiveRenderAclModule(result.data);
+                   } else {
+                       showMessage("加载权限模块", result.msg, false);
+                   }
+               }
+           });
+       }
+       function recursiveRenderAclModule(aclModuleList) {
+            if (aclModuleList && aclModuleList.length > 0) {
+                aclModuleList.each(function (i, aclModule) {
+                    aclModuleMap[aclModule.id] = aclModule;
+                    if (aclModule.aclModuleList && aclModule.aclModuleList.length > 0) {
+                        var rendered = Mustache.render(aclModuleListTemplate, {
+                            aclModuleList : aclModule.aclModuleList,
+                            "showDownAngle" : function () {
+                                return function (text, render) {
+                                    return (this.aclModuleList && this.aclModuleList.length > 0) ? "" : "hidden";
+                                }
+                            },
+                            "displayClass" : function () {
+                                return "hidden";
+                            }
+                        });
+                        $("#aclModuleList_" + aclModule.id).html(rendered);
+                        recursiveRenderAclModule(aclModule.aclModuleList);
+                    }
+                });
+
+            }
+       }
+
+       $(".aclModule-add").click(function () {
+
+       });
+
+       function bindAclModuleClick() {
+
        }
    })
 </script>
