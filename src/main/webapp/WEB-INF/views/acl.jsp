@@ -5,7 +5,7 @@
     <jsp:include page="/common/backend_common.jsp"/>
     <jsp:include page="/common/page.jsp"/>
 </head>
-<body class="no-skin" youdao="bind" style="background: white">
+<body class="no-skin" youdao="bind" style="background: white; min-height: 0%;">
 <input id="gritter-light" checked="" type="checkbox" class="ace ace-switch ace-switch-5"/>
 
 <div class="page-header">
@@ -247,6 +247,7 @@
                        });
                        $("#aclModuleList").html(rendered);
                        recursiveRenderAclModule(result.data);
+                       bindAclModuleClick();
                    } else {
                        showMessage("加载权限模块", result.msg, false);
                    }
@@ -255,7 +256,7 @@
        }
        function recursiveRenderAclModule(aclModuleList) {
             if (aclModuleList && aclModuleList.length > 0) {
-                aclModuleList.each(function (i, aclModule) {
+                $(aclModuleList).each(function (i, aclModule) {
                     aclModuleMap[aclModule.id] = aclModule;
                     if (aclModule.aclModuleList && aclModule.aclModuleList.length > 0) {
                         var rendered = Mustache.render(aclModuleListTemplate, {
@@ -269,7 +270,7 @@
                                 return "hidden";
                             }
                         });
-                        $("#aclModuleList_" + aclModule.id).html(rendered);
+                        $("#aclModule_" + aclModule.id).append(rendered);
                         recursiveRenderAclModule(aclModule.aclModuleList);
                     }
                 });
@@ -278,11 +279,81 @@
        }
 
        $(".aclModule-add").click(function () {
-
+           $("#dialog-aclModule-form").dialog({
+               modal : true,
+               title : "新增权限模块",
+               open : function (event, ui) {
+                   $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                   optionStr = "<option value='0'>-</option>";
+                   recursiveRenderAclModuleSelect(aclModuleList, 1);
+                   $("#aclModuleForm")[0].reset();
+                   $("#parentId").html(optionStr);
+               },
+               buttons : {
+                   "添加": function(e) {
+                       e.preventDefault();
+                       updateAclModule(true, function (data) {
+                           $("#dialog-aclModule-form").dialog("close");
+                       }, function (data) {
+                           showMessage("新增权限模块", data.msg, false);
+                       })
+                   },
+                   "取消": function () {
+                       $("#dialog-aclModule-form").dialog("close");
+                   }
+               }
+           });
        });
 
+       function recursiveRenderAclModuleSelect(aclModuleList, level) {
+            level = level | 0;
+            if (aclModuleList && aclModuleList.length > 0) {
+                $(aclModuleList).each(function (i, aclModule) {
+                    aclModuleMap[aclModule.id] = aclModule;
+                    var blank = "";
+                    if (level > 1) {
+                        for(var j = 3; j <= level; j++) {
+                            blank += "...";
+                        }
+                        blank += "∟";
+                    }
+                    optionStr += Mustache.render("<option value='{{id}}'>{{name}}</option>", {id : aclModule.id, name : blank + aclModule.name});
+                    if (aclModule.aclModuleList && aclModule.aclModuleList.length > 0) {
+                        recursiveRenderAclModuleSelect(aclModule.aclModuleList, level + 1);
+                    }
+                });
+            }
+       }
+       function updateAclModule(isCreate, successCallback, failCallback) {
+           $.ajax({
+               url: isCreate ? "/sys/aclModule/save.json" : "/sys/aclModule/update.json",
+               data: $("#aclModuleForm").serializeArray(),
+               type: 'POST',
+               success: function(result) {
+                   if (result.result) {
+                       loadAclModuleTree();
+                       if (successCallback) {
+                           successCallback(result);
+                       }
+                   } else {
+                       if (failCallback) {
+                           failCallback(result);
+                       }
+                   }
+               }
+           })
+       }
        function bindAclModuleClick() {
-
+            $(".sub-aclModule").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).parent().parent().parent().children().children(".aclModule-name").toggleClass("hidden");
+                if ($(this).is(".fa-angle-double-down")) {
+                    $(this).removeClass("fa-angle-double-down").addClass("fa-angle-double-up");
+                } else {
+                    $(this).removeClass("fa-angle-double-up").addClass("fa-angle-double-down");
+                }
+            });
        }
    })
 </script>

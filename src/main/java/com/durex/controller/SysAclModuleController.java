@@ -21,7 +21,7 @@ public class SysAclModuleController {
     @Autowired
     private SysTreeService sysTreeService;
 
-    @RequestMapping("/aclModule.page")
+    @RequestMapping("/acl.page")
     public ModelAndView page() {
         return new ModelAndView("acl");
     }

@@ -35,6 +35,7 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
                 .seq(aclModuleParam.getSeq())
                 .status(aclModuleParam.getStatus())
                 .remark(aclModuleParam.getRemark())
+                .parentId(aclModuleParam.getParentId())
                 .build();
         sysAclModule.setOperator(RequestHolder.getCurrentUser().getUsername());
         sysAclModule.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
