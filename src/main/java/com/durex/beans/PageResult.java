@@ -17,4 +17,5 @@ public class PageResult<T> {
     private List<T> data = Lists.newArrayList();
 
     private int total = 0;
+
 }
