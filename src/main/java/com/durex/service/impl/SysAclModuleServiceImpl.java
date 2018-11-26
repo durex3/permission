@@ -54,6 +54,7 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
         SysAclModule after = SysAclModule.builder()
                 .id(aclModuleParam.getId())
                 .name(aclModuleParam.getName())
+                .parentId(aclModuleParam.getParentId())
                 .level(LevelUtil.calculateLevel(getLevel(aclModuleParam.getParentId()), aclModuleParam.getParentId()))
                 .seq(aclModuleParam.getSeq())
                 .status(aclModuleParam.getStatus())
@@ -87,8 +88,8 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
                 // 批量更新
                 sysAclModuleMapper.batchUpdateLevel(aclModuleList);
             }
-            sysAclModuleMapper.updateByPrimaryKey(after);
         }
+        sysAclModuleMapper.updateByPrimaryKey(after);
     }
 
     private boolean checkExist(Integer parentId, String deptName, Integer aclModuleId) {

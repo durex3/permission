@@ -354,6 +354,62 @@
                     $(this).removeClass("fa-angle-double-up").addClass("fa-angle-double-down");
                 }
             });
+           $(".aclModule-edit").click(function (e) {
+               e.preventDefault();
+               e.stopPropagation();
+               var aclModuleId = $(this).attr("data-id");
+               $("#dialog-aclModule-form").dialog({
+                   modal : true,
+                   title : "编辑权限模块",
+                   open : function (event, ui) {
+                       $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                       optionStr = "<option value='0'>-</option>";
+                       recursiveRenderAclModuleSelect(aclModuleList, 1);
+                       $("#aclModuleForm")[0].reset();
+                       $("#parentId").html(optionStr);
+                       $("#aclModuleId").val(aclModuleId);
+                       var targetAclModule = aclModuleMap[aclModuleId];
+                       if (targetAclModule) {
+                           $("#parentId").val(targetAclModule.parentId);
+                           $("#aclModuleName").val(targetAclModule.name);
+                           $("#aclModuleSeq").val(targetAclModule.seq);
+                           $("#aclModuleRemark").val(targetAclModule.remark);
+                           $("#aclModuleStatus").val(targetAclModule.status);
+                       }
+                   },
+                   buttons : {
+                       "更新": function(e) {
+                           e.preventDefault();
+                           updateAclModule(false, function (data) {
+                               $("#dialog-aclModule-form").dialog("close");
+                           }, function (data) {
+                               showMessage("编辑权限模块", data.msg, false);
+                           })
+                       },
+                       "取消": function () {
+                           $("#dialog-aclModule-form").dialog("close");
+                       }
+                   }
+               });
+           });
+           $(".aclModule-name").click(function (e) {
+               e.preventDefault();
+               e.stopPropagation();
+               var aclModuleId = $(this).attr("data-id");
+               handleAclModuleSelected(aclModuleId);
+           });
+       }
+       function handleAclModuleSelected(aclModuleId) {
+           if (lastClickAclModuleId != -1) {
+               var lastAclModule = $("#aclModule_" + lastClickAclModuleId + " .dd2-content:first");
+               lastAclModule.removeClass("btn-yellow");
+               lastAclModule.removeClass("no-hover");
+           }
+           var currentAclModule = $("#aclModule_" + aclModuleId + " .dd2-content:first");
+           currentAclModule.addClass("btn-yellow");
+           currentAclModule.addClass("no-hover");
+           lastClickAclModuleId = aclModuleId;
+           //加载权限点列表
        }
    })
 </script>
