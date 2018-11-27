@@ -19,6 +19,8 @@ public interface SysAclMapper {
 
     int updateByPrimaryKey(SysAcl record);
 
+    int countByNameAndAclModuleId(@Param("aclModuleId") int aclModuleId, @Param("name") String name, @Param("id") Integer Id);
+
     int countByAclModuleId(@Param("aclModuleId") int aclModuleId);
 
     List<SysAcl> getPagebByAclModuleId(@Param("aclModuleId") int aclModuleId, @Param("page") PageQuery page);

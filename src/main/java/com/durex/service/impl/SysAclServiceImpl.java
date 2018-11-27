@@ -36,6 +36,8 @@ public class SysAclServiceImpl implements SysAclService {
                 .status(aclParam.getStatus())
                 .type(aclParam.getType())
                 .remark(aclParam.getRemark())
+                .url(aclParam.getUrl())
+                .seq(aclParam.getSeq())
                 .build();
         sysAcl.setCode(generateCode());
         sysAcl.setOperator(RequestHolder.getCurrentUser().getUsername());
@@ -59,6 +61,8 @@ public class SysAclServiceImpl implements SysAclService {
                 .status(aclParam.getStatus())
                 .type(aclParam.getType())
                 .remark(aclParam.getRemark())
+                .url(aclParam.getUrl())
+                .seq(aclParam.getSeq())
                 .build();
         after.setOperator(RequestHolder.getCurrentUser().getUsername());
         after.setOperateTime(new Date());
@@ -77,8 +81,8 @@ public class SysAclServiceImpl implements SysAclService {
         return PageResult.<SysAcl>builder().build();
     }
 
-    private boolean checkExist(int aclModuleId, String name, int aclId) {
-        return false;
+    private boolean checkExist(int aclModuleId, String name, Integer aclId) {
+        return sysAclMapper.countByNameAndAclModuleId(aclModuleId, name, aclId) > 0;
     }
 
     private String generateCode() {
