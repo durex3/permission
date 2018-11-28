@@ -514,7 +514,7 @@
                type: 'POST',
                success: function(result) {
                    if (result.result) {
-                       //loadAclList();
+                       loadAclList(lastClickAclModuleId);
                        if (successCallback) {
                            successCallback(result);
                        }
@@ -527,7 +527,46 @@
            })
        }
        function bindAclClick() {
-           
+           $(".acl-edit").click(function (e) {
+               e.preventDefault();
+               e.stopPropagation();
+               var aclId = $(this).attr("data-id");
+               $("#dialog-acl-form").dialog({
+                   modal : true,
+                   title : "编辑权限点",
+                   open : function (event, ui) {
+                       $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                       optionStr = "";
+                       recursiveRenderAclModuleSelect(aclModuleList, 1);
+                       $("#aclForm")[0].reset();
+                       $("#aclModuleSelectId").html(optionStr);
+                       var targetAcl = aclMap[aclId];
+                       if (targetAcl) {
+                           $("#aclId").val(aclId);
+                           $("#aclModuleSelectId").val(targetAcl.aclModuleId);
+                           $("#aclType").val(targetAcl.type);
+                           $("#aclName").val(targetAcl.name);
+                           $("#aclSeq").val(targetAcl.seq);
+                           $("#aclRemark").val(targetAcl.remark);
+                           $("#aclStatus").val(targetAcl.status);
+                           $("#aclUrl").val(targetAcl.url);
+                       }
+                   },
+                   buttons : {
+                       "更新": function(e) {
+                           e.preventDefault();
+                           updateAcl(false, function (data) {
+                               $("#dialog-acl-form").dialog("close");
+                           }, function (data) {
+                               showMessage("编辑权限点", data.msg, false);
+                           })
+                       },
+                       "取消": function () {
+                           $("#dialog-acl-form").dialog("close");
+                       }
+                   }
+               });
+           });
        }
    })
 </script>
