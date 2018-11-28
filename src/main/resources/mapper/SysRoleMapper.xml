@@ -132,7 +132,7 @@
     FROM sys_role
   </select>
 
-  <select id="countByName" parameterType="map" resultMap="int">
+  <select id="countByName" parameterType="map" resultType="int">
     SELECT COUNT(1)
     FROM sys_role
     WHERE name = #{name}
