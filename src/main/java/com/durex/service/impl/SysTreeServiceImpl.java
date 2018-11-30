@@ -4,9 +4,11 @@ import com.durex.dao.SysAclModuleMapper;
 import com.durex.dao.SysDeptMapper;
 import com.durex.dto.AclModuleLevelDto;
 import com.durex.dto.DeptLevelDto;
+import com.durex.model.SysAcl;
 import com.durex.model.SysAclModule;
 import com.durex.model.SysDept;
 import com.durex.service.SysAclModuleService;
+import com.durex.service.SysCoreService;
 import com.durex.service.SysTreeService;
 import com.durex.util.LevelUtil;
 import com.google.common.collect.ArrayListMultimap;
@@ -28,6 +30,19 @@ public class SysTreeServiceImpl implements SysTreeService {
     private SysDeptMapper sysDeptMapper;
     @Autowired
     private SysAclModuleMapper sysAclModuleMapper;
+    @Autowired
+    private SysCoreService sysCoreService;
+
+    //============================ 角色模块树-start =================================//
+    @Override
+    public List<AclModuleLevelDto> roleAclTree(int roleId) {
+        // 1.当前用户已分配的权限点
+        List<SysAcl> userAclList = sysCoreService.getCurrentUserAclList();
+        // 2.当前角色分配的权限点
+        List<SysAcl> roleAclList = sysCoreService.getRoleAclList(roleId);
+        return null;
+    }
+    //============================ 角色模块树-end =================================//
 
     //============================ 权限模块树-start =================================//
     @Override

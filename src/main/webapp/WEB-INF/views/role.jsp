@@ -213,9 +213,68 @@
         }
         
         function bindRoleClick() {
-
+            $(".role-edit").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var roleId = $(this).attr("data-id");
+                $("#dialog-role-form").dialog({
+                    modal : true,
+                    title : "编辑角色",
+                    open : function (event, ui) {
+                        $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                        $("#roleForm")[0].reset();
+                        var targetRole = roleMap[roleId];
+                        if (targetRole) {
+                            $("#roleId").val(roleId);
+                            $("#roleName").val(targetRole.name);
+                            $("#roleStatus").val(targetRole.status);
+                            $("#roleRemark").val(targetRole.remark);
+                        }
+                    },
+                    buttons : {
+                        "更新": function(e) {
+                            e.preventDefault();
+                            updateRole(false, function (data) {
+                                $("#dialog-role-form").dialog("close");
+                            }, function (data) {
+                                showMessage("修改角色", data.msg, false);
+                            })
+                        },
+                        "取消": function () {
+                            $("#dialog-role-form").dialog("close");
+                        }
+                    }
+                });
+            });
+            $(".role-name").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var roleId = $(this).attr("data-id");
+                handleRoleSelected(roleId);
+            });
         }
 
+        function handleRoleSelected(roleId) {
+            if (lastRoleId != -1) {
+                var lastRole = $("#role_" + lastRoleId + " .dd2-content:first");
+                lastRole.removeClass("btn-yellow");
+                lastRole.removeClass("no-hover");
+            }
+            var currentRole = $("#role_" + roleId + " .dd2-content:first");
+            currentRole.addClass("btn-yellow");
+            currentRole.addClass("no-hover");
+            lastRoleId = roleId;
+            $("#roleTab a:first").trigger("click");
+            //加载那个tab
+            if (selectFirstTab) {
+                loadRoleAcl();
+            }
+        }
+        
+        //角色权限
+        function loadRoleAcl() {
+            
+        }
     })
 </script>
 </body>
