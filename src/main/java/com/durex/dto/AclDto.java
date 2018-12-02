@@ -1,8 +1,14 @@
 package com.durex.dto;
 
 import com.durex.model.SysAcl;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.beans.BeanUtils;
 
+@Getter
+@Setter
+@ToString
 public class AclDto extends SysAcl {
 
     // 是否默认选中

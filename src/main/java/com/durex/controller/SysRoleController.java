@@ -3,6 +3,7 @@ package com.durex.controller;
 import com.durex.common.JsonData;
 import com.durex.param.RoleParam;
 import com.durex.service.SysRoleService;
+import com.durex.service.SysTreeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,8 @@ public class SysRoleController {
 
     @Autowired
     private SysRoleService sysRoleService;
+    @Autowired
+    private SysTreeService sysTreeService;
 
 
     @RequestMapping("/role.page")
@@ -48,7 +51,7 @@ public class SysRoleController {
     @RequestMapping(value = "/roleAclTree.json", method = RequestMethod.GET)
     @ResponseBody
     public JsonData aclTree(@RequestParam int roleId) {
-        return JsonData.success();
+        return JsonData.success(sysTreeService.roleAclTree(roleId));
     }
 
 }

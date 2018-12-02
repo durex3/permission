@@ -31,6 +31,7 @@ public class SysCoreServiceImpl implements SysCoreService {
 
     @Override
     public List<SysAcl> getRoleAclList(int roleId) {
+        // 根据角色id取出权限点id
         List<Integer> aclIdList = sysRoleAclMapper.getAclIdListByRoleIdList(Lists.newArrayList(roleId));
         if (CollectionUtils.isEmpty(aclIdList)) {
             return Lists.newArrayList();
