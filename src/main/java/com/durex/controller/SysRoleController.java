@@ -1,9 +1,12 @@
 package com.durex.controller;
 
 import com.durex.common.JsonData;
+import com.durex.model.SysRoleAcl;
 import com.durex.param.RoleParam;
+import com.durex.service.SysRoleAclService;
 import com.durex.service.SysRoleService;
 import com.durex.service.SysTreeService;
+import com.durex.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +23,8 @@ public class SysRoleController {
     private SysRoleService sysRoleService;
     @Autowired
     private SysTreeService sysTreeService;
+    @Autowired
+    private SysRoleAclService sysRoleAclService;
 
 
     @RequestMapping("/role.page")
@@ -52,6 +57,13 @@ public class SysRoleController {
     @ResponseBody
     public JsonData aclTree(@RequestParam int roleId) {
         return JsonData.success(sysTreeService.roleAclTree(roleId));
+    }
+
+    @RequestMapping(value = "/changeAcl.json", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonData changeAcl(@RequestParam("roleId") int roleId, @RequestParam(value = "aclIds", required = false, defaultValue = "") String aclIds) {
+        sysRoleAclService.changeRoleAcl(roleId, StringUtil.splitToListInt(aclIds));
+        return JsonData.success();
     }
 
 }

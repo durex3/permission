@@ -331,6 +331,7 @@
             $.fn.zTree.init($("#roleAclTree"), setting, zTreeObj);
         }
 
+        // 渲染权限树
         function recursivePrepareTreeData(aclModuleList) {
             if (aclModuleList && aclModuleList.length > 0) {
                 $(aclModuleList).each(function (i, aclModule) {
@@ -382,13 +383,36 @@
             var treeObj = $.fn.zTree.getZTreeObj("roleAclTree");
             var nodes = treeObj.getCheckedNodes(true);
             var v = "";
-            for(var i = 0; i < nodes.length; i++) {
+            for (var i = 0; i < nodes.length; i++) {
                 if(nodes[i].id.startsWith(aclPrefix)) {
                     v += "," + nodes[i].dataId;
                 }
             }
             return v.length > 0 ? v.substring(1) : v;
         }
+
+        $(".saveRoleAcl").click(function (e) {
+            e.preventDefault();
+            if (lastRoleId == -1) {
+                showMessage("保存角色与权限点的关系", "请先在左侧选择操作的角色", false);
+                return;
+            }
+            $.ajax({
+                url : "/sys/role/changeAcl.json",
+                type : "post",
+                data : {
+                    roleId : lastRoleId,
+                    aclIds : getTreeSelectedId()
+                },
+                success : function (result) {
+                    if (result.result) {
+                        showMessage("保存角色与权限点的关系", "操作成功", false);
+                    } else {
+                        showMessage("保存角色与权限点的关系", result.msg, false);
+                    }
+                }
+            });
+        });
     })
 </script>
 </body>
