@@ -3,8 +3,11 @@ package com.durex.service.impl;
 import com.durex.common.RequestHolder;
 import com.durex.dao.SysDeptMapper;
 import com.durex.dao.SysRoleAclMapper;
+import com.durex.dao.SysRoleUserMapper;
 import com.durex.model.SysDept;
 import com.durex.model.SysRoleAcl;
+import com.durex.model.SysRoleUser;
+import com.durex.model.SysUser;
 import com.durex.service.TransactionalService;
 import com.durex.util.IpUtil;
 import com.google.common.collect.Lists;
@@ -27,6 +30,8 @@ public class TransactionalServiceImpl implements TransactionalService {
     private SysRoleAclMapper sysRoleAclMapper;
     @Autowired
     private SysDeptMapper sysDeptMapper;
+    @Autowired
+    private SysRoleUserMapper sysRoleUserMapper;
 
 
     /**
@@ -52,7 +57,28 @@ public class TransactionalServiceImpl implements TransactionalService {
                     .build();
             roleAclList.add(sysRoleAcl);
         }
-        sysRoleAclMapper.batchInset(roleAclList);
+        sysRoleAclMapper.batchInsert(roleAclList);
+    }
+
+    @Transactional
+    @Override
+    public void updateRoleUser(Integer roleId, List<Integer> userIdList) {
+        sysRoleUserMapper.deleteByRoleId(roleId);
+        if (CollectionUtils.isEmpty(userIdList)) {
+            return;
+        }
+        List<SysRoleUser> sysRoleUserList = Lists.newArrayList();
+        for (Integer i : userIdList) {
+            SysRoleUser sysRoleUser = SysRoleUser.builder()
+                    .roleId(roleId)
+                    .userId(i)
+                    .operator(RequestHolder.getCurrentUser().getUsername())
+                    .operateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()))
+                    .operateTime(new Date())
+                    .build();
+            sysRoleUserList.add(sysRoleUser);
+        }
+        sysRoleUserMapper.batchInsert(sysRoleUserList);
     }
 
     @Transactional
