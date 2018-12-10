@@ -402,6 +402,30 @@
                var aclModuleId = $(this).attr("data-id");
                handleAclModuleSelected(aclModuleId);
            });
+
+           // 删除权限模块
+           $(".aclModule-delete").click(function (e) {
+               e.preventDefault();
+               e.stopPropagation();
+               var aclModuleId = $(this).attr("data-id");
+               var aclModuleName = $(this).attr("data-name");
+               if (confirm("确定要删除权限模块[" + aclModuleName + "]吗?")) {
+                   $.ajax({
+                       url : "/sys/aclModule/delete.json",
+                       data :  {
+                           aclModuleId : aclModuleId
+                       },
+                       success : function (result) {
+                           if (result.result) {
+                               showMessage("删除权限模块[" + aclModuleName + "]", "操作成功", true);
+                               loadAclModuleTree();
+                           } else {
+                               showMessage("删除权限模块[" + aclModuleName + "]", result.msg, false);
+                           }
+                       }
+                   });
+               }
+           });
        }
        function handleAclModuleSelected(aclModuleId) {
            if (lastClickAclModuleId != -1) {

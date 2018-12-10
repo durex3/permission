@@ -338,6 +338,12 @@
                     }
                 });
             });
+            $(".dept-name").click(function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var deptId = $(this).attr("data-id");
+                handleDeptSelected(deptId);
+            });
             // 删除部门
             $(".dept-delete").click(function (e) {
                 e.preventDefault();
@@ -345,16 +351,21 @@
                 var deptId = $(this).attr("data-id");
                 var deptName = $(this).attr("data-name");
                 if (confirm("确定要删除部门[" + deptName + "]吗?")) {
-                    //TODO
-                    console.log("delete dept:" + deptName);
+                    $.ajax({
+                        url : "/sys/dept/delete.json",
+                        data : {
+                            deptId : deptId
+                        },
+                        success : function (result) {
+                            if (result.result) {
+                                showMessage("删除部门[" + deptName + "]", "操作成功", true);
+                                loadDeptTree();
+                            } else {
+                                showMessage("删除部门[" + deptName + "]", result.msg, false);
+                            }
+                        }
+                    });
                 }
-                return false;
-            });
-            $(".dept-name").click(function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var deptId = $(this).attr("data-id");
-                handleDeptSelected(deptId);
             });
         }
 
@@ -431,6 +442,24 @@
             }
         }
         function bindUserClick() {
+            $(".user-acl").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var userId = $(this).attr("data-id");
+                $.ajax({
+                    url : "/sys/user/acl.json",
+                    data : {
+                        userId: userId
+                    },
+                    success : function(result) {
+                        if (result.result) {
+                            console.log(result)
+                        } else {
+                            showMessage("获取用户权限数据", result.msg, false);
+                        }
+                    }
+                })
+            });
             // 编辑用户
             $(".user-edit").click(function (e) {
                 e.preventDefault();

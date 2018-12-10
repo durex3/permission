@@ -8,4 +8,6 @@ public interface SysAclModuleService {
     void save(AclModuleParam aclModuleParam);
 
     void update(AclModuleParam aclModuleParam);
+
+    void delete(Integer aclModuleId);
 }

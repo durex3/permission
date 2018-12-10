@@ -1,6 +1,7 @@
 package com.durex.service.impl;
 
 import com.durex.common.RequestHolder;
+import com.durex.dao.SysAclMapper;
 import com.durex.dao.SysAclModuleMapper;
 import com.durex.exception.ParamException;
 import com.durex.model.SysAclModule;
@@ -22,6 +23,8 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
 
     @Autowired
     private SysAclModuleMapper sysAclModuleMapper;
+    @Autowired
+    private SysAclMapper sysAclMapper;
 
     @Override
     public void save(AclModuleParam aclModuleParam) {
@@ -90,6 +93,19 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
             }
         }
         sysAclModuleMapper.updateByPrimaryKey(after);
+    }
+
+    @Override
+    public void delete(Integer aclModuleId) {
+        SysAclModule sysAclModule = sysAclModuleMapper.selectByPrimaryKey(aclModuleId);
+        Preconditions.checkNotNull(sysAclModule, "待更新的权限模块不存在");
+        if (sysAclModuleMapper.countByParentId(sysAclModule.getId()) > 0) {
+            throw new ParamException("当前权限模块下面有子模块，无法删除");
+        }
+        if (sysAclMapper.countByAclModuleId(sysAclModule.getId()) > 0) {
+            throw new ParamException("当前权限模块下面有权限点，无法删除");
+        }
+        sysAclModuleMapper.deleteByPrimaryKey(aclModuleId);
     }
 
     private boolean checkExist(Integer parentId, String deptName, Integer aclModuleId) {

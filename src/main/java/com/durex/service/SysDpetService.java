@@ -8,4 +8,6 @@ public interface SysDpetService {
     void save(DeptParam deptParam);
 
     void update(DeptParam deptParam);
+
+    void delete(Integer deptId);
 }

@@ -173,4 +173,10 @@
     </if>
   </select>
 
+  <select id="countByParentId" parameterType="map" resultType="int">
+    SELECT count(1)
+    FROM sys_dept
+    WHERE parent_id = #{parentId}
+  </select>
+
 </mapper>
