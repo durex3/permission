@@ -551,6 +551,24 @@
            })
        }
        function bindAclClick() {
+           $(".acl-role").click(function (e) {
+               e.preventDefault();
+               e.stopPropagation();
+               var aclId = $(this).attr("data-id");
+               $.ajax({
+                   url : "/sys/acl/roleAndUser.json",
+                   data : {
+                       aclId: aclId
+                   },
+                   success : function(result) {
+                       if (result.result) {
+                           console.log(result)
+                       } else {
+                           showMessage("获取权限点分配的用户和角色", result.msg, false);
+                       }
+                   }
+               })
+           });
            $(".acl-edit").click(function (e) {
                e.preventDefault();
                e.stopPropagation();

@@ -2,7 +2,10 @@ package com.durex.service.impl;
 
 import com.durex.common.RequestHolder;
 import com.durex.dao.SysRoleAclMapper;
+import com.durex.dao.SysRoleMapper;
+import com.durex.model.SysRole;
 import com.durex.model.SysRoleAcl;
+import com.durex.model.SysRoleUser;
 import com.durex.service.SysRoleAclService;
 import com.durex.service.TransactionalService;
 import com.durex.util.IpUtil;
@@ -24,6 +27,8 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
     private SysRoleAclMapper sysRoleAclMapper;
     @Autowired
     private TransactionalService transactionalService;
+    @Autowired
+    private SysRoleMapper sysRoleMapper;
 
     @Override
     public void changeRoleAcl(Integer roleId, List<Integer> aclIdList) {
@@ -37,5 +42,14 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
             }
         }
         transactionalService.updateRoleAcl(roleId, aclIdList);
+    }
+
+    @Override
+    public List<SysRole> getRoleListByAclId(int aclId) {
+        List<Integer> roleIdList = sysRoleAclMapper.getRoleIdListByAclId(aclId);
+        if (CollectionUtils.isEmpty(roleIdList)) {
+            return Lists.newArrayList();
+        }
+        return sysRoleMapper.getByIdList(roleIdList);
     }
 }

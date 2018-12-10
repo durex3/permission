@@ -447,7 +447,7 @@
                 e.stopPropagation();
                 var userId = $(this).attr("data-id");
                 $.ajax({
-                    url : "/sys/user/acl.json",
+                    url : "/sys/user/aclAndRole.json",
                     data : {
                         userId: userId
                     },

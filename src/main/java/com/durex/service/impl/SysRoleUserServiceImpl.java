@@ -1,7 +1,9 @@
 package com.durex.service.impl;
 
+import com.durex.dao.SysRoleMapper;
 import com.durex.dao.SysRoleUserMapper;
 import com.durex.dao.SysUserMapper;
+import com.durex.model.SysRole;
 import com.durex.model.SysUser;
 import com.durex.service.SysRoleUserService;
 import com.durex.service.TransactionalService;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SysRoleUserServiceImpl implements SysRoleUserService {
@@ -22,6 +25,8 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
     private SysRoleUserMapper sysRoleUserMapper;
     @Autowired
     private SysUserMapper sysUserMapper;
+    @Autowired
+    private SysRoleMapper sysRoleMapper;
     @Autowired
     private TransactionalService transactionalService;
 
@@ -46,5 +51,24 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
             }
         }
         transactionalService.updateRoleUser(roleId, userIdList);
+    }
+
+    @Override
+    public List<SysRole> getRoleListByUserId(int userId) {
+        List<Integer> roleIdList = sysRoleUserMapper.getRoleIdListByUserId(userId);
+        if (CollectionUtils.isEmpty(roleIdList)) {
+            return Lists.newArrayList();
+        }
+        return sysRoleMapper.getByIdList(roleIdList);
+    }
+
+    @Override
+    public List<SysUser> getUserListByRoleList(List<SysRole> roleList) {
+        if (CollectionUtils.isEmpty(roleList)) {
+            return Lists.newArrayList();
+        }
+        List<Integer> roleIdList = roleList.stream().map(sysRole -> sysRole.getId()).collect(Collectors.toList());
+        List<Integer> userIdList = sysRoleUserMapper.getUserIdListByRoleIdList(roleIdList);
+        return sysUserMapper.getByIdList(userIdList);
     }
 }

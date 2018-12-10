@@ -35,7 +35,21 @@ public class SysTreeServiceImpl implements SysTreeService {
     @Autowired
     private SysAclMapper sysAclMapper;
 
-    //============================ 角色模块树-start =================================//
+    @Override
+    public List<AclModuleLevelDto> userAclTree(int userId) {
+        // 用户已分配的权限点
+        List<SysAcl> userAclList = sysCoreService.getUserAclList(userId);
+        List<AclDto> aclList = Lists.newArrayList();
+        for (SysAcl sysAcl : userAclList) {
+            AclDto aclDto = AclDto.adapt(sysAcl);
+            aclDto.setHasAcl(true);
+            aclDto.setChecked(true);
+            aclList.add(aclDto);
+        }
+        return aclListToTree(aclList);
+    }
+
+    //============================ 角色权限树-start =================================//
     @Override
     public List<AclModuleLevelDto> roleAclTree(int roleId) {
         // 1.当前用户已分配的权限点
@@ -97,7 +111,7 @@ public class SysTreeServiceImpl implements SysTreeService {
         }
     };
 
-    //============================ 角色模块树-end =================================//
+    //============================ 角色权限树-end =================================//
 
     //============================ 权限模块树-start =================================//
     @Override

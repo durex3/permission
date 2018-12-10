@@ -1,5 +1,6 @@
 package com.durex.dao;
 
+import com.durex.model.SysAcl;
 import com.durex.model.SysRoleAcl;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,4 +24,6 @@ public interface SysRoleAclMapper {
     void deleteByRoleId(@Param("roleId") int roleId);
 
     void batchInsert(@Param("roleAclList") List<SysRoleAcl> roleAclList);
+
+    List<Integer> getRoleIdListByAclId(@Param("aclId") Integer aclId);
 }
