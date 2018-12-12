@@ -6,9 +6,12 @@ import java.util.List;
 
 public interface SysCoreService {
 
-    public List<SysAcl> getCurrentUserAclList();
+    List<SysAcl> getCurrentUserAclList();
 
-    public List<SysAcl> getRoleAclList(int roleId);
+    List<SysAcl> getRoleAclList(int roleId);
 
-    public List<SysAcl> getUserAclList(int userId);
+    List<SysAcl> getUserAclList(int userId);
+
+    boolean hasAcl(String url);
+
 }
