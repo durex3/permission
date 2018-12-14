@@ -470,7 +470,7 @@
                 type : "post",
                 data : {
                     roleId : lastRoleId,
-                    userIds : $("#roleUserList").val() ? $("#roleUserList").val().join(",") : ""
+                    userIds :  $("#roleUserList").val() ? $("#roleUserList").val().join(",") : ""
                 },
                 success : function (result) {
                     if (result.result) {

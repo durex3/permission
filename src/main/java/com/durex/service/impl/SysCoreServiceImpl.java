@@ -1,5 +1,6 @@
 package com.durex.service.impl;
 
+import com.durex.beans.CacheKeyConstants;
 import com.durex.common.RequestHolder;
 import com.durex.dao.SysAclMapper;
 import com.durex.dao.SysRoleAclMapper;
@@ -8,10 +9,15 @@ import com.durex.dao.SysRoleUserMapper;
 import com.durex.model.SysAcl;
 import com.durex.model.SysUser;
 import com.durex.service.SysCoreService;
+import com.durex.util.JsonMapper;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,6 +31,8 @@ public class SysCoreServiceImpl implements SysCoreService {
     private SysRoleUserMapper sysRoleUserMapper;
     @Autowired
     private SysRoleAclMapper sysRoleAclMapper;
+    @Autowired
+    private SysCacheService sysCacheService;
 
     @Override
     public List<SysAcl> getCurrentUserAclList() {
@@ -79,7 +87,7 @@ public class SysCoreServiceImpl implements SysCoreService {
         if (CollectionUtils.isEmpty(aclList)) {
             return true;
         }
-        List<SysAcl> userAclList = getCurrentUserAclList();
+        List<SysAcl> userAclList = getCurrentUserAclListFromCache();
         Set<Integer> userAclIdList = userAclList.stream().map(sysAcl -> sysAcl.getId()).collect(Collectors.toSet());
         boolean hasValidAcl = false;
         // 规则：只要有一个权限点的权限，那么我们就认为有访问权限
@@ -97,6 +105,21 @@ public class SysCoreServiceImpl implements SysCoreService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<SysAcl> getCurrentUserAclListFromCache() {
+        int userId = RequestHolder.getCurrentUser().getId();
+        String cacheValue = sysCacheService.getFromCache(CacheKeyConstants.USER_ACLS, String.valueOf(userId));
+        if (StringUtils.isBlank(cacheValue)) {
+            List<SysAcl> aclList = getCurrentUserAclList();
+            if (CollectionUtils.isNotEmpty(aclList)) {
+                sysCacheService.saveCache(JsonMapper.object2String(aclList), 600, CacheKeyConstants.USER_ACLS, String.valueOf(userId));
+            }
+            return aclList;
+        }
+        return JsonMapper.String2Object(cacheValue, new TypeReference<List<SysAcl>>() {
+        });
     }
 }
 

@@ -13,7 +13,7 @@
   <!-- Spring beans 配置文件所在目录 -->
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>classpath:applicationContext.xml</param-value>
+    <param-value>classpath:applicationContext.xml,classpath:redis.xml</param-value>
   </context-param>
 
   <!-- spring mvc 配置 -->
