@@ -55,14 +55,17 @@ public class SysAclController {
         return JsonData.success(pageResult);
     }
 
-    @RequestMapping(value = "/roleAndUser.json")
+    @RequestMapping(value = "/role.json")
     @ResponseBody
     public JsonData role(@RequestParam Integer aclId) {
-        Map<String, Object> map = Maps.newHashMap();
+        return JsonData.success(sysRoleAclService.getRoleListByAclId(aclId));
+    }
+
+    @RequestMapping(value = "/user.json")
+    @ResponseBody
+    public JsonData user(@RequestParam Integer aclId) {
         List<SysRole> roleList = sysRoleAclService.getRoleListByAclId(aclId);
-        map.put("roleList", roleList);
-        map.put("userList", sysRoleUserService.getUserListByRoleList(roleList));
-        return JsonData.success(map);
+        return JsonData.success(sysRoleUserService.getUserListByRoleList(roleList));
     }
 
 }

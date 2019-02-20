@@ -522,7 +522,7 @@
                                 }
                             });
                         } else {
-                            showMessage("获取用户权限数据", result.msg, false);
+                            showMessage("获取用户角色数据", result.msg, false);
                         }
                     }
                 })

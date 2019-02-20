@@ -169,6 +169,16 @@
     </form>
 </div>
 
+<div id="dialog-aclRole-form" style="display: none;">
+    <ol class="dd-list" id="roleList">
+    </ol>
+</div>
+
+<div id="dialog-aclUser-form" style="display: none;">
+    <select size="10" class="form-control" name="aclUserList" id="aclUserList" >
+    </select>
+</div>
+
 <script id="aclModuleListTemplate" type="x-tmpl-mustache">
 <ol class="dd-list ">
     {{#aclModuleList}}
@@ -211,10 +221,29 @@
             <a class="red acl-role" href="#" data-id="{{id}}">
                 <i class="ace-icon fa fa-flag bigger-100"></i>
             </a>
+            <a class="red acl-user" href="#" data-id="{{id}}">
+                <i class="ace-icon fa fa-flag bigger-100"></i>
+            </a>
         </div>
     </td>
 </tr>
 {{/aclList}}
+</script>
+
+<script id="roleListTemplate" type="x-tmpl-mustache">
+{{#roleList}}
+    <li class="dd-item dd2-item dept-name" id="role_{{id}}" href="javascript:void(0)" data-id="{{id}}">
+        <div class="dd2-content" style="cursor:pointer;">
+        {{name}}
+        </div>
+    </li>
+{{/roleList}}
+</script>
+
+<script id="selectedUsersTemplate" type="x-tmpl-mustache">
+{{#userList}}
+    <option value="{{id}}">{{username}}</option>
+{{/userList}}
 </script>
 
 <script type="text/javascript">
@@ -225,9 +254,13 @@
        var lastClickAclModuleId = -1;
        var aclModuleListTemplate = $("#aclModuleListTemplate").html();
        Mustache.parse(aclModuleListTemplate);
-
        var aclListTemplate = $("#aclListTemplate").html();
        Mustache.parse(aclListTemplate);
+       var roleListTemplate = $('#roleListTemplate').html();
+       Mustache.parse(roleListTemplate);
+       var selectedUsersTemplate = $("#selectedUsersTemplate").html();
+       Mustache.parse(selectedUsersTemplate);
+
        var aclMap = {};
 
        loadAclModuleTree();
@@ -551,20 +584,67 @@
            })
        }
        function bindAclClick() {
-           $(".acl-role").click(function (e) {
+            // 渲染权限点所分配的用户
+           $(".acl-user").click(function (e) {
                e.preventDefault();
                e.stopPropagation();
                var aclId = $(this).attr("data-id");
                $.ajax({
-                   url : "/sys/acl/roleAndUser.json",
+                   url : "/sys/acl/user.json",
                    data : {
                        aclId: aclId
                    },
                    success : function(result) {
                        if (result.result) {
-                           console.log(result)
+                           $("#dialog-aclUser-form").dialog({
+                               modal : true,
+                               title : "权限所分配的用户",
+                               open : function (event, ui) {
+                                   $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                                   var rendered = Mustache.render(selectedUsersTemplate, {userList : result.data});
+                                   $("#aclUserList").html(rendered);
+                               },
+                               buttons : {
+                                   "取消": function () {
+                                       $("#dialog-aclUser-form").dialog("close");
+                                   }
+                               }
+                           });
                        } else {
-                           showMessage("获取权限点分配的用户和角色", result.msg, false);
+                           showMessage("获取权限所分配用户", result.msg, false);
+                       }
+                   }
+               })
+           });
+
+           // 渲染权限点所分配的角色
+           $(".acl-role").click(function (e) {
+               e.preventDefault();
+               e.stopPropagation();
+               var aclId = $(this).attr("data-id");
+               $.ajax({
+                   url : "/sys/acl/role.json",
+                   data : {
+                       aclId: aclId
+                   },
+                   success : function(result) {
+                       if (result.result) {
+                           $("#dialog-aclRole-form").dialog({
+                               modal : true,
+                               title : "权限所分配的角色",
+                               open : function (event, ui) {
+                                   $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                                   var rendered = Mustache.render(roleListTemplate, {roleList : result.data});
+                                   $("#roleList").html(rendered);
+                               },
+                               buttons : {
+                                   "取消": function () {
+                                       $("#dialog-aclRole-form").dialog("close");
+                                   }
+                               }
+                           });
+                       } else {
+                           showMessage("获取权限所分配角色", result.msg, false);
                        }
                    }
                })
