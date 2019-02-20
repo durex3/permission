@@ -54,13 +54,16 @@ public class SysUserController {
         return JsonData.success(pageResult);
     }
 
-    @RequestMapping(value = "/aclAndRole.json")
+    @RequestMapping(value = "/acl.json")
     @ResponseBody
     public JsonData acl(@RequestParam Integer userId) {
-        Map<String, Object> map = Maps.newHashMap();
-        map.put("aclList", sysTreeService.userAclTree(userId));
-        map.put("roleList", sysRoleUserService.getRoleListByUserId(userId));
-        return JsonData.success(map);
+        return JsonData.success(sysTreeService.userAclTree(userId));
+    }
+
+    @RequestMapping(value = "/role.json")
+    @ResponseBody
+    public JsonData role(@RequestParam Integer userId) {
+        return JsonData.success(sysRoleUserService.getRoleListByUserId(userId));
     }
 
     @RequestMapping(value = "/noAuth.page")

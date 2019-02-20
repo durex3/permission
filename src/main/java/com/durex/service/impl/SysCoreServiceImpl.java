@@ -6,6 +6,7 @@ import com.durex.dao.SysAclMapper;
 import com.durex.dao.SysRoleAclMapper;
 import com.durex.dao.SysRoleMapper;
 import com.durex.dao.SysRoleUserMapper;
+import com.durex.dto.AclModuleLevelDto;
 import com.durex.model.SysAcl;
 import com.durex.model.SysUser;
 import com.durex.service.SysCoreService;
@@ -34,11 +35,29 @@ public class SysCoreServiceImpl implements SysCoreService {
     @Autowired
     private SysCacheService sysCacheService;
 
+    /**
+     * 获取当前登录用户的权限
+     * @return
+     */
     @Override
     public List<SysAcl> getCurrentUserAclList() {
         int userId = RequestHolder.getCurrentUser().getId();
-        return getUserAclList(userId);
+        if (isSuperAdmin()) {
+            return sysAclMapper.getAll();
+        }
+        // 根据用户ID取出角色ID列表
+        List<Integer> userRoleIdList = sysRoleUserMapper.getRoleIdListByUserId(userId);
+        if (CollectionUtils.isEmpty(userRoleIdList)) {
+            return Lists.newArrayList();
+        }
+        // 根据用户角色ID列表取出权限ID列表
+        List<Integer> userAclIdList = sysRoleAclMapper.getAclIdListByRoleIdList(userRoleIdList);
+        if (CollectionUtils.isEmpty(userRoleIdList)) {
+            return Lists.newArrayList();
+        }
+        return sysAclMapper.getByIdList(userAclIdList);
     }
+
 
     @Override
     public List<SysAcl> getRoleAclList(int roleId) {
@@ -52,9 +71,6 @@ public class SysCoreServiceImpl implements SysCoreService {
 
     @Override
     public List<SysAcl> getUserAclList(int userId) {
-        if (isSuperAdmin()) {
-            return sysAclMapper.getAll();
-        }
         // 根据用户ID取出角色ID列表
         List<Integer> userRoleIdList = sysRoleUserMapper.getRoleIdListByUserId(userId);
         if (CollectionUtils.isEmpty(userRoleIdList)) {

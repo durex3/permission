@@ -4,6 +4,8 @@
     <title>部门管理</title>
     <jsp:include page="/common/backend_common.jsp"/>
     <jsp:include page="/common/page.jsp"/>
+    <link rel="stylesheet" href="/ztree/zTreeStyle.css" type="text/css">
+    <script type="text/javascript" src="/ztree/jquery.ztree.all.min.js"></script>
 </head>
 <body class="no-skin" youdao="bind" style="background: white; min-height: 0%;">
 <input id="gritter-light" checked="" type="checkbox" class="ace ace-switch ace-switch-5"/>
@@ -70,7 +72,9 @@
                             <th tabindex="0" aria-controls="dynamic-table" rowspan="1" colspan="1">
                                 状态
                             </th>
-                            <th class="sorting_disabled" rowspan="1" colspan="1" aria-label=""></th>
+                            <th tabindex="0" aria-controls="dynamic-table" rowspan="1" colspan="1">
+                                操作
+                            </th>
                         </tr>
                         </thead>
                         <tbody id="userList"></tbody>
@@ -146,6 +150,15 @@
         </table>
     </form>
 </div>
+<div id="dialog-userAcl-form" style="display: none;">
+    <ul id="userAclTree" class="ztree"></ul>
+</div>
+
+<div id="dialog-userRole-form" style="display: none;">
+    <ol class="dd-list" id="roleList">
+    </ol>
+</div>
+
 <script id="deptListTemplate" type="x-tmpl-mustache">
 <ol class="dd-list">
     {{#deptList}}
@@ -179,6 +192,9 @@
             <a class="green user-edit" href="#" data-id="{{id}}">
                 <i class="ace-icon fa fa-pencil bigger-100"></i>
             </a>
+            <a class="red user-role" href="#" data-id="{{id}}">
+                <i class="ace-icon fa fa-flag bigger-100"></i>
+            </a>
             <a class="red user-acl" href="#" data-id="{{id}}">
                 <i class="ace-icon fa fa-flag bigger-100"></i>
             </a>
@@ -186,6 +202,15 @@
     </td>
 </tr>
 {{/userList}}
+</script>
+<script id="roleListTemplate" type="x-tmpl-mustache">
+{{#roleList}}
+    <li class="dd-item dd2-item dept-name" id="role_{{id}}" href="javascript:void(0)" data-id="{{id}}">
+        <div class="dd2-content" style="cursor:pointer;">
+        {{name}}
+        </div>
+    </li>
+{{/roleList}}
 </script>
 <script type="application/javascript">
     $(function () {
@@ -197,8 +222,35 @@
         Mustache.parse(deptListTemplate);
         var userListTemplate = $('#userListTemplate').html();
         Mustache.parse(userListTemplate);
+        var roleListTemplate = $('#roleListTemplate').html();
+        Mustache.parse(roleListTemplate);
+
         var userMap = {}; // 存储map格式的用户信息
+
+        // zTree
+        <!-- 树结构相关 开始 -->
+        var zTreeObj = [];
+        var modulePrefix = 'm_';
+        var aclPrefix = 'a_';
+        var nodeMap = {};
+
+        var setting = {
+            check: {
+                enable: true,
+                chkDisabledInherit: true,
+                chkboxType: {"Y": "ps", "N": "ps"}, //auto check 父节点 子节点
+                autoCheckTrigger: true
+            },
+            data: {
+                simpleData: {
+                    enable: true,
+                    rootPId: 0
+                }
+            }
+        };
+
         loadDeptTree();
+
         function loadDeptTree() {
             $.ajax({
                 url : "/sys/dept/tree.json",
@@ -442,18 +494,66 @@
             }
         }
         function bindUserClick() {
-            $(".user-acl").click(function (e) {
+            // 渲染用户所拥有的角色
+            $(".user-role").click(function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var userId = $(this).attr("data-id");
                 $.ajax({
-                    url : "/sys/user/aclAndRole.json",
+                    url : "/sys/user/role.json",
                     data : {
                         userId: userId
                     },
                     success : function(result) {
                         if (result.result) {
-                            console.log(result)
+                            console.log(result.data);
+                            $("#dialog-userRole-form").dialog({
+                                modal : true,
+                                title : "用户角色",
+                                open : function (event, ui) {
+                                    $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                                    var rendered = Mustache.render(roleListTemplate, {roleList : result.data});
+                                    $("#roleList").html(rendered);
+                                },
+                                buttons : {
+                                    "取消": function () {
+                                        $("#dialog-userRole-form").dialog("close");
+                                    }
+                                }
+                            });
+                        } else {
+                            showMessage("获取用户权限数据", result.msg, false);
+                        }
+                    }
+                })
+            });
+
+            // 渲染用户所拥有的权限
+            $(".user-acl").click(function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var userId = $(this).attr("data-id");
+                $.ajax({
+                    url : "/sys/user/acl.json",
+                    data : {
+                        userId: userId
+                    },
+                    success : function(result) {
+                        if (result.result) {
+                            console.log(result.data);
+                            $("#dialog-userAcl-form").dialog({
+                                modal : true,
+                                title : "用户权限",
+                                open : function (event, ui) {
+                                    $(".ui-dialog-titlebar-close", $(this).parent()).hide();
+                                    renderRoleAclTree(result.data);
+                                },
+                                buttons : {
+                                    "取消": function () {
+                                        $("#dialog-userAcl-form").dialog("close");
+                                    }
+                                }
+                            });
                         } else {
                             showMessage("获取用户权限数据", result.msg, false);
                         }
@@ -548,6 +648,65 @@
                     }
                 }
             })
+        }
+
+        function renderRoleAclTree(aclModuleList) {
+            zTreeObj = [];
+            nodeMap = {};
+            recursivePrepareTreeData(aclModuleList)
+            for(var key in nodeMap) {
+                zTreeObj.push(nodeMap[key]);
+            }
+            $.fn.zTree.init($("#userAclTree"), setting, zTreeObj);
+        }
+
+        // 渲染权限树
+        function recursivePrepareTreeData(aclModuleList) {
+            if (aclModuleList && aclModuleList.length > 0) {
+                $(aclModuleList).each(function (i, aclModule) {
+                    var hasChecked = false;
+                    if (aclModule.aclList && aclModule.aclList.length > 0) {
+                        $(aclModule.aclList).each(function (i, acl) {
+                            zTreeObj.push({
+                                id : aclPrefix + acl.id,
+                                pId : modulePrefix + acl.aclModuleId,
+                                name : acl.name + ((acl.type == 1) ? '(菜单)' : ''),
+                                chkDisabled : !acl.hasAcl,
+                                checked : acl.checked,
+                                dataId : acl.id
+                            });
+                            // 有一个权限点那么权限模块要展开
+                            if (acl.checked) {
+                                hasChecked = true;
+                            }
+                        });
+                    }
+                    // 权限模块下面有权限模块或者权限点
+                    if ((aclModule.aclModuleList && aclModule.aclModuleList.length > 0) ||
+                        (aclModule.aclList && aclModule.aclList.length > 0)) {
+                        nodeMap[modulePrefix + aclModule.id] = {
+                            id : modulePrefix + aclModule.id,
+                            pId : modulePrefix + aclModule.parentId,
+                            name : aclModule.name,
+                            open : hasChecked
+                        };
+                        // 上级模块也要展开
+                        var tempAclModule = nodeMap[modulePrefix + aclModule.id];
+                        while (hasChecked && tempAclModule) {
+                            if(tempAclModule) {
+                                nodeMap[tempAclModule.id] = {
+                                    id : tempAclModule.id,
+                                    pId : tempAclModule.pId,
+                                    name : tempAclModule.name,
+                                    open : true
+                                }
+                            }
+                            tempAclModule = nodeMap[tempAclModule.pId];
+                        }
+                    }
+                    recursivePrepareTreeData(aclModule.aclModuleList);
+                });
+            }
         }
     })
 </script>

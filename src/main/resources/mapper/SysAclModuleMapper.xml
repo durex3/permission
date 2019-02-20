@@ -189,4 +189,14 @@
     FROM sys_acl_module
     WHERE parent_id = #{parentId}
   </select>
+
+  <select id="getAclModuleByAclIdList" parameterType="map" resultMap="BaseResultMap">
+    SELECT
+      <include refid="Base_Column_List" />
+    FROM sys_acl_module
+    WHERE id IN
+    <foreach collection="aclIdList" item="aclId" open="(" close=")" separator=",">
+      #{aclId}
+    </foreach>
+  </select>
 </mapper>

@@ -338,7 +338,6 @@
             if (aclModuleList && aclModuleList.length > 0) {
                 $(aclModuleList).each(function (i, aclModule) {
                     var hasChecked = false;
-                    // 权限点
                     if (aclModule.aclList && aclModule.aclList.length > 0) {
                         $(aclModule.aclList).each(function (i, acl) {
                             zTreeObj.push({
@@ -349,6 +348,7 @@
                                 checked : acl.checked,
                                 dataId : acl.id
                             });
+                            // 有一个权限点那么权限模块要展开
                             if (acl.checked) {
                                 hasChecked = true;
                             }

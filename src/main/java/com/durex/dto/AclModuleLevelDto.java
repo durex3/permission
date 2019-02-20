@@ -2,6 +2,7 @@ package com.durex.dto;
 
 import com.durex.model.SysAclModule;
 import com.google.common.collect.Lists;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

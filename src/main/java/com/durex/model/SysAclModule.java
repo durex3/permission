@@ -1,12 +1,10 @@
 package com.durex.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Date;
 
+@EqualsAndHashCode(of = {"id"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
