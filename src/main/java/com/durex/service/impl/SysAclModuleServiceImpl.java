@@ -7,6 +7,8 @@ import com.durex.exception.ParamException;
 import com.durex.model.SysAclModule;
 import com.durex.param.AclModuleParam;
 import com.durex.service.SysAclModuleService;
+import com.durex.service.SysLogService;
+import com.durex.service.TransactionalService;
 import com.durex.util.BeanValidator;
 import com.durex.util.IpUtil;
 import com.durex.util.LevelUtil;
@@ -25,6 +27,10 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
     private SysAclModuleMapper sysAclModuleMapper;
     @Autowired
     private SysAclMapper sysAclMapper;
+    @Autowired
+    private TransactionalService transactionalService;
+    @Autowired
+    private SysLogService sysLogService;
 
     @Override
     public void save(AclModuleParam aclModuleParam) {
@@ -44,6 +50,7 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
         sysAclModule.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         sysAclModule.setOperateTime(new Date());
         sysAclModuleMapper.insertSelective(sysAclModule);
+        sysLogService.saveAclModuleLog(null, sysAclModule);
     }
 
     @Override
@@ -66,34 +73,11 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
         after.setOperator(RequestHolder.getCurrentUser().getUsername());
         after.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         after.setOperateTime(new Date());
-        updateWithChild(before, after);
+        transactionalService.updateWithChild(before, after);
+        sysLogService.saveAclModuleLog(before, after);
     }
 
-    @Transactional
-    protected void updateWithChild(SysAclModule before, SysAclModule after) {
-        // 如果自己是自己的上级是不合理的
-        if(before.getId() == after.getParentId()) {
-            return;
-        }
-        String newLevelPrefix = after.getLevel();
-        String oldLevelPrefix = before.getLevel();
-        if (!after.getLevel().equals(before.getLevel())) {
-            String curLevel = before.getLevel() + "." + before.getId();
-            List<SysAclModule> aclModuleList = sysAclModuleMapper.getChildAclModuleListByLevel(curLevel + "%");
-            if (CollectionUtils.isNotEmpty(aclModuleList)) {
-                for(SysAclModule aclModule : aclModuleList) {
-                    String level = aclModule.getLevel();
-                    if (level.equals(curLevel) || level.indexOf(curLevel + ".") == 0) {
-                        level = newLevelPrefix + level.substring(oldLevelPrefix.length());
-                        aclModule.setLevel(level);
-                    }
-                }
-                // 批量更新
-                sysAclModuleMapper.batchUpdateLevel(aclModuleList);
-            }
-        }
-        sysAclModuleMapper.updateByPrimaryKey(after);
-    }
+
 
     @Override
     public void delete(Integer aclModuleId) {

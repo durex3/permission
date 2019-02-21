@@ -8,6 +8,7 @@ import com.durex.exception.ParamException;
 import com.durex.model.SysAcl;
 import com.durex.param.AclParam;
 import com.durex.service.SysAclService;
+import com.durex.service.SysLogService;
 import com.durex.util.BeanValidator;
 import com.durex.util.IpUtil;
 import com.google.common.base.Preconditions;
@@ -23,6 +24,8 @@ public class SysAclServiceImpl implements SysAclService {
 
     @Autowired
     private SysAclMapper sysAclMapper;
+    @Autowired
+    private SysLogService sysLogService;
 
     @Override
     public void save(AclParam aclParam) {
@@ -44,6 +47,7 @@ public class SysAclServiceImpl implements SysAclService {
         sysAcl.setOperateTime(new Date());
         sysAcl.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         sysAclMapper.insertSelective(sysAcl);
+        sysLogService.saveAclLog(null, sysAcl);
     }
 
     @Override
@@ -68,6 +72,8 @@ public class SysAclServiceImpl implements SysAclService {
         after.setOperateTime(new Date());
         after.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         sysAclMapper.updateByPrimaryKeySelective(after);
+        sysLogService.saveAclLog(before, after);
+
     }
 
     @Override

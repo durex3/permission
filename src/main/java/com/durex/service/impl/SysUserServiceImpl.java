@@ -7,6 +7,7 @@ import com.durex.dao.SysUserMapper;
 import com.durex.exception.ParamException;
 import com.durex.model.SysUser;
 import com.durex.param.UserParam;
+import com.durex.service.SysLogService;
 import com.durex.service.SysUserService;
 import com.durex.util.BeanValidator;
 import com.durex.util.IpUtil;
@@ -22,6 +23,8 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Autowired
     private SysUserMapper sysUserMapper;
+    @Autowired
+    private SysLogService sysLogService;
 
     @Override
     public void save(UserParam userParam) {
@@ -50,6 +53,7 @@ public class SysUserServiceImpl implements SysUserService {
         // TODO: sendEmail
 
         sysUserMapper.insertSelective(sysUser);
+        sysLogService.saveUserLog(null, sysUser);
     }
 
     @Override
@@ -76,6 +80,7 @@ public class SysUserServiceImpl implements SysUserService {
         after.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         after.setOperateTime(new Date());
         sysUserMapper.updateByPrimaryKeySelective(after);
+        sysLogService.saveUserLog(before, after);
     }
 
     @Override

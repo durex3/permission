@@ -7,6 +7,7 @@ import com.durex.exception.ParamException;
 import com.durex.model.SysDept;
 import com.durex.param.DeptParam;
 import com.durex.service.SysDpetService;
+import com.durex.service.SysLogService;
 import com.durex.service.TransactionalService;
 import com.durex.util.BeanValidator;
 import com.durex.util.IpUtil;
@@ -22,9 +23,11 @@ public class SysDeptServiceImpl implements SysDpetService {
     @Autowired
     private SysDeptMapper sysDeptMapper;
     @Autowired
+    private SysUserMapper sysUserMapper;
+    @Autowired
     private TransactionalService transactionalService;
     @Autowired
-    private SysUserMapper sysUserMapper;
+    private SysLogService sysLogService;
 
     @Override
     public void save(DeptParam deptParam) {
@@ -43,6 +46,7 @@ public class SysDeptServiceImpl implements SysDpetService {
         sysDept.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         sysDept.setOperateTime(new Date());
         sysDeptMapper.insertSelective(sysDept);
+        sysLogService.saveDeptLog(null, sysDept);
     }
 
     @Override
@@ -66,6 +70,7 @@ public class SysDeptServiceImpl implements SysDpetService {
         after.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         after.setOperateTime(new Date());
         transactionalService.updateWithChild(before, after);
+        sysLogService.saveDeptLog(before, after);
     }
 
     @Override

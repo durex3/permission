@@ -22,7 +22,7 @@
     delete from sys_role_user
     where id = #{id,jdbcType=INTEGER}
   </delete>
-  <insert id="insert" parameterType="com.durex.model.SysRoleUser" >
+  <insert id="insert" parameterType="com.durex.model.SysRoleUser" keyProperty="id" useGeneratedKeys="true">
     insert into sys_role_user (id, role_id, user_id, 
       operator, operate_time, operate_ip
       )
@@ -30,7 +30,7 @@
       #{operator,jdbcType=VARCHAR}, #{operateTime,jdbcType=TIMESTAMP}, #{operateIp,jdbcType=VARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.durex.model.SysRoleUser" >
+  <insert id="insertSelective" parameterType="com.durex.model.SysRoleUser" keyProperty="id" useGeneratedKeys="true">
     insert into sys_role_user
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="id != null" >

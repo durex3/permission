@@ -5,6 +5,7 @@ import com.durex.dao.SysRoleMapper;
 import com.durex.exception.ParamException;
 import com.durex.model.SysRole;
 import com.durex.param.RoleParam;
+import com.durex.service.SysLogService;
 import com.durex.service.SysRoleService;
 import com.durex.util.BeanValidator;
 import com.durex.util.IpUtil;
@@ -19,6 +20,8 @@ public class SysRoleServiceImpl implements SysRoleService {
 
     @Autowired
     private SysRoleMapper sysRoleMapper;
+    @Autowired
+    private SysLogService sysLogService;
 
     @Override
     public void save(RoleParam roleParam) {
@@ -36,6 +39,7 @@ public class SysRoleServiceImpl implements SysRoleService {
         sysRole.setOperateTime(new Date());
         sysRole.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         sysRoleMapper.insertSelective(sysRole);
+        sysLogService.saveRoleLog(null, sysRole);
     }
 
     @Override
@@ -57,6 +61,8 @@ public class SysRoleServiceImpl implements SysRoleService {
         after.setOperateTime(new Date());
         after.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         sysRoleMapper.updateByPrimaryKeySelective(after);
+        sysLogService.saveRoleLog(before, after);
+
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.durex.dao.SysRoleMapper;
 import com.durex.model.SysRole;
 import com.durex.model.SysRoleAcl;
 import com.durex.model.SysRoleUser;
+import com.durex.service.SysLogService;
 import com.durex.service.SysRoleAclService;
 import com.durex.service.TransactionalService;
 import com.durex.util.IpUtil;
@@ -26,9 +27,11 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
     @Autowired
     private SysRoleAclMapper sysRoleAclMapper;
     @Autowired
+    private SysRoleMapper sysRoleMapper;
+    @Autowired
     private TransactionalService transactionalService;
     @Autowired
-    private SysRoleMapper sysRoleMapper;
+    private SysLogService sysLogService;
 
     @Override
     public void changeRoleAcl(Integer roleId, List<Integer> aclIdList) {
@@ -42,6 +45,7 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
             }
         }
         transactionalService.updateRoleAcl(roleId, aclIdList);
+        sysLogService.saveRoleAclLog(roleId, originAclIdList, aclIdList);
     }
 
     @Override

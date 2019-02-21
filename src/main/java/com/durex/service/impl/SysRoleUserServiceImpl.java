@@ -5,6 +5,7 @@ import com.durex.dao.SysRoleUserMapper;
 import com.durex.dao.SysUserMapper;
 import com.durex.model.SysRole;
 import com.durex.model.SysUser;
+import com.durex.service.SysLogService;
 import com.durex.service.SysRoleUserService;
 import com.durex.service.TransactionalService;
 import com.google.common.collect.Lists;
@@ -29,6 +30,9 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
     private SysRoleMapper sysRoleMapper;
     @Autowired
     private TransactionalService transactionalService;
+    @Autowired
+    private SysLogService sysLogService;
+
 
     @Override
     public List<SysUser> getListByRoleId(int roleId) {
@@ -51,6 +55,7 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
             }
         }
         transactionalService.updateRoleUser(roleId, userIdList);
+        sysLogService.saveRoleUserLog(roleId, originUserIdList, userIdList);
     }
 
     @Override

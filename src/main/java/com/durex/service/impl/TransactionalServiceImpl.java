@@ -1,13 +1,11 @@
 package com.durex.service.impl;
 
 import com.durex.common.RequestHolder;
+import com.durex.dao.SysAclModuleMapper;
 import com.durex.dao.SysDeptMapper;
 import com.durex.dao.SysRoleAclMapper;
 import com.durex.dao.SysRoleUserMapper;
-import com.durex.model.SysDept;
-import com.durex.model.SysRoleAcl;
-import com.durex.model.SysRoleUser;
-import com.durex.model.SysUser;
+import com.durex.model.*;
 import com.durex.service.TransactionalService;
 import com.durex.util.IpUtil;
 import com.google.common.collect.Lists;
@@ -32,6 +30,8 @@ public class TransactionalServiceImpl implements TransactionalService {
     private SysDeptMapper sysDeptMapper;
     @Autowired
     private SysRoleUserMapper sysRoleUserMapper;
+    @Autowired
+    private SysAclModuleMapper sysAclModuleMapper;
 
 
     /**
@@ -82,6 +82,7 @@ public class TransactionalServiceImpl implements TransactionalService {
     }
 
     @Transactional
+    @Override
     public void updateWithChild(SysDept before, SysDept after) {
         // 如果自己是自己的上级部门是不合理的
         if(before.getId() == after.getParentId()) {
@@ -107,5 +108,32 @@ public class TransactionalServiceImpl implements TransactionalService {
             }
         }
         sysDeptMapper.updateByPrimaryKey(after);
+    }
+
+    @Transactional
+    @Override
+    public void updateWithChild(SysAclModule before, SysAclModule after) {
+        // 如果自己是自己的上级是不合理的
+        if(before.getId() == after.getParentId()) {
+            return;
+        }
+        String newLevelPrefix = after.getLevel();
+        String oldLevelPrefix = before.getLevel();
+        if (!after.getLevel().equals(before.getLevel())) {
+            String curLevel = before.getLevel() + "." + before.getId();
+            List<SysAclModule> aclModuleList = sysAclModuleMapper.getChildAclModuleListByLevel(curLevel + "%");
+            if (CollectionUtils.isNotEmpty(aclModuleList)) {
+                for(SysAclModule aclModule : aclModuleList) {
+                    String level = aclModule.getLevel();
+                    if (level.equals(curLevel) || level.indexOf(curLevel + ".") == 0) {
+                        level = newLevelPrefix + level.substring(oldLevelPrefix.length());
+                        aclModule.setLevel(level);
+                    }
+                }
+                // 批量更新
+                sysAclModuleMapper.batchUpdateLevel(aclModuleList);
+            }
+        }
+        sysAclModuleMapper.updateByPrimaryKey(after);
     }
 }
