@@ -1,8 +1,11 @@
 package com.durex.service.impl;
 
+import com.durex.beans.LogType;
 import com.durex.common.RequestHolder;
+import com.durex.dao.SysLogMapper;
 import com.durex.dao.SysRoleAclMapper;
 import com.durex.dao.SysRoleMapper;
+import com.durex.model.SysLogWithBLOBs;
 import com.durex.model.SysRole;
 import com.durex.model.SysRoleAcl;
 import com.durex.model.SysRoleUser;
@@ -10,6 +13,7 @@ import com.durex.service.SysLogService;
 import com.durex.service.SysRoleAclService;
 import com.durex.service.TransactionalService;
 import com.durex.util.IpUtil;
+import com.durex.util.JsonMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
@@ -31,7 +35,7 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
     @Autowired
     private TransactionalService transactionalService;
     @Autowired
-    private SysLogService sysLogService;
+    private SysLogMapper sysLogMapper;
 
     @Override
     public void changeRoleAcl(Integer roleId, List<Integer> aclIdList) {
@@ -45,7 +49,7 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
             }
         }
         transactionalService.updateRoleAcl(roleId, aclIdList);
-        sysLogService.saveRoleAclLog(roleId, originAclIdList, aclIdList);
+        saveRoleAclLog(roleId, originAclIdList, aclIdList);
     }
 
     @Override
@@ -55,5 +59,19 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
             return Lists.newArrayList();
         }
         return sysRoleMapper.getByIdList(roleIdList);
+    }
+
+
+    private void saveRoleAclLog(int roleId, List<Integer> before, List<Integer> after) {
+        SysLogWithBLOBs sysLog = new SysLogWithBLOBs();
+        sysLog.setType(LogType.TYPE_ROLE_ACL);
+        sysLog.setTargetId(roleId);
+        sysLog.setOldValue(before == null ? "" : JsonMapper.object2String(before));
+        sysLog.setNewValue(after == null ? "" : JsonMapper.object2String(after));
+        sysLog.setOperator(RequestHolder.getCurrentUser().getUsername());
+        sysLog.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
+        sysLog.setOperateTime(new Date());
+        sysLog.setStatus(1);
+        sysLogMapper.insertSelective(sysLog);
     }
 }

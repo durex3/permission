@@ -134,7 +134,7 @@ public class SysCoreServiceImpl implements SysCoreService {
             }
             return aclList;
         }
-        return JsonMapper.String2Object(cacheValue, new TypeReference<List<SysAcl>>() {
+        return JsonMapper.string2Object(cacheValue, new TypeReference<List<SysAcl>>() {
         });
     }
 }

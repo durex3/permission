@@ -1,13 +1,19 @@
 package com.durex.service.impl;
 
+import com.durex.beans.LogType;
+import com.durex.common.RequestHolder;
+import com.durex.dao.SysLogMapper;
 import com.durex.dao.SysRoleMapper;
 import com.durex.dao.SysRoleUserMapper;
 import com.durex.dao.SysUserMapper;
+import com.durex.model.SysLogWithBLOBs;
 import com.durex.model.SysRole;
 import com.durex.model.SysUser;
 import com.durex.service.SysLogService;
 import com.durex.service.SysRoleUserService;
 import com.durex.service.TransactionalService;
+import com.durex.util.IpUtil;
+import com.durex.util.JsonMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
@@ -15,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +38,7 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
     @Autowired
     private TransactionalService transactionalService;
     @Autowired
-    private SysLogService sysLogService;
+    private SysLogMapper sysLogMapper;
 
 
     @Override
@@ -55,7 +62,7 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
             }
         }
         transactionalService.updateRoleUser(roleId, userIdList);
-        sysLogService.saveRoleUserLog(roleId, originUserIdList, userIdList);
+        saveRoleUserLog(roleId, originUserIdList, userIdList);
     }
 
     @Override
@@ -75,5 +82,18 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
         List<Integer> roleIdList = roleList.stream().map(sysRole -> sysRole.getId()).collect(Collectors.toList());
         List<Integer> userIdList = sysRoleUserMapper.getUserIdListByRoleIdList(roleIdList);
         return sysUserMapper.getByIdList(userIdList);
+    }
+
+    private void saveRoleUserLog(int roleId, List<Integer> before, List<Integer> after) {
+        SysLogWithBLOBs sysLog = new SysLogWithBLOBs();
+        sysLog.setType(LogType.TYPE_ROLE_USER);
+        sysLog.setTargetId(roleId);
+        sysLog.setOldValue(before == null ? "" : JsonMapper.object2String(before));
+        sysLog.setNewValue(after == null ? "" : JsonMapper.object2String(after));
+        sysLog.setOperator(RequestHolder.getCurrentUser().getUsername());
+        sysLog.setOperateIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
+        sysLog.setOperateTime(new Date());
+        sysLog.setStatus(1);
+        sysLogMapper.insertSelective(sysLog);
     }
 }

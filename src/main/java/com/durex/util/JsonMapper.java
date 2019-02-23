@@ -33,7 +33,7 @@ public class JsonMapper {
         }
     }
 
-    public static <T> T String2Object(String src, TypeReference<T> typeReference) {
+    public static <T> T string2Object(String src, TypeReference<T> typeReference) {
         if (src == null || typeReference == null) {
             return null;
         }

@@ -1,22 +1,25 @@
 package com.durex.service;
 
+import com.durex.beans.PageQuery;
+import com.durex.beans.PageResult;
 import com.durex.model.*;
+import com.durex.param.SearchLogParam;
 
 import java.util.List;
 
 public interface SysLogService {
 
-    public void saveDeptLog(SysDept before, SysDept after);
+    void saveDeptLog(SysDept before, SysDept after);
 
-    public void saveUserLog(SysUser before, SysUser after);
+    void saveUserLog(SysUser before, SysUser after);
 
-    public void saveAclModuleLog(SysAclModule before, SysAclModule after);
+    void saveAclModuleLog(SysAclModule before, SysAclModule after);
 
-    public void saveAclLog(SysAcl before, SysAcl after);
+    void saveAclLog(SysAcl before, SysAcl after);
 
-    public void saveRoleLog(SysRole before, SysRole after);
+    void saveRoleLog(SysRole before, SysRole after);
 
-    public void saveRoleAclLog(int roleId, List<Integer> before, List<Integer> after);
+    PageResult<SysLogWithBLOBs> searchPageList(SearchLogParam param, PageQuery page);
 
-    public void saveRoleUserLog(int roleId, List<Integer> before, List<Integer> after);
+    void recover(int id);
 }
